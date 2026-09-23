@@ -23,14 +23,14 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t hello-java-jenkins:%BUILD_NUMBER% -t hello-java-jenkins:latest .'
+                bat '"C:/Users/admin/AppData/Local/Programs/DockerDesktop/resources/bin/docker.exe" build -t hello-java-jenkins:%BUILD_NUMBER% -t hello-java-jenkins:latest .'
             }
         }
 
         stage('Run Docker Container') {
             steps {
-                bat 'docker run --rm hello-java-jenkins:latest'
-            }
+                bat '"C:/Users/admin/AppData/Local/Programs/DockerDesktop/resources/bin/docker.exe" run --rm hello-java-jenkins:latest'           
+		 }
         }
     }
 }
