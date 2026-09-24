@@ -39,22 +39,28 @@ pipeline {
         }
 
         stage('Push to Docker Hub') {
-            steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'dockerhub-credentials',
-                        usernameVariable: 'DOCKER_USERNAME',
-                        passwordVariable: 'DOCKER_PASSWORD'
-                    )
-                ]) {
-                    bat '''
-                        echo %DOCKER_PASSWORD% | "%DOCKER_PATH%" login -u %DOCKER_USERNAME% --password-stdin
-                        "%DOCKER_PATH%" push %DOCKER_IMAGE%:%BUILD_NUMBER%
-                        "%DOCKER_PATH%" push %DOCKER_IMAGE%:latest
-                        "%DOCKER_PATH%" logout
-                    '''
-                }
-            }
+    steps {
+        withCredentials([
+            usernamePassword(
+                credentialsId: 'dockerhub-credentials',
+                usernameVariable: 'DOCKER_USERNAME',
+                passwordVariable: 'DOCKER_PASSWORD'
+            )
+        ]) {
+            bat '''
+                echo %DOCKER_PASSWORD% | "%DOCKER_PATH%" login -u %DOCKER_USERNAME% --password-stdin
+                if %ERRORLEVEL% NEQ 0 exit /b %ERRORLEVEL%
+
+                "%DOCKER_PATH%" push %DOCKER_IMAGE%:%BUILD_NUMBER%
+                if %ERRORLEVEL% NEQ 0 exit /b %ERRORLEVEL%
+
+                "%DOCKER_PATH%" push %DOCKER_IMAGE%:latest
+                if %ERRORLEVEL% NEQ 0 exit /b %ERRORLEVEL%
+
+                "%DOCKER_PATH%" logout
+            '''
         }
+    }
+}
     }
 }
