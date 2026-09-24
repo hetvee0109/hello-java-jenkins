@@ -38,6 +38,14 @@ pipeline {
             }
         }
 
+        stage('Docker Logout (clear stale sessions)') {
+            steps {
+                // Clears any leftover cached login (e.g. from manual testing on this machine)
+                // so the push below can only succeed using the Jenkins credential, not a stale session.
+                bat '"%DOCKER_PATH%" logout || exit 0'
+            }
+        }
+
         stage('Push to Docker Hub') {
             steps {
                 withCredentials([
@@ -48,7 +56,9 @@ pipeline {
                     )
                 ]) {
                     bat '''
-                        echo %DOCKER_PASSWORD% | "%DOCKER_PATH%" login -u %DOCKER_USERNAME% --password-stdin
+                        powershell -Command "Write-Host ('DOCKER_USERNAME=' + $env:DOCKER_USERNAME); Write-Host ('DOCKER_PASSWORD length=' + $env:DOCKER_PASSWORD.Length)"
+
+                        "%DOCKER_PATH%" login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%
                         if %ERRORLEVEL% NEQ 0 exit /b %ERRORLEVEL%
 
                         "%DOCKER_PATH%" push %DOCKER_IMAGE%:%BUILD_NUMBER%
